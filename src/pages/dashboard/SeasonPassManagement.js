@@ -344,6 +344,20 @@ export default function SeasonPassManagement() {
     }
   };
 
+  const resolvePassCost = useCallback((pass) => {
+    if (!pass) return 0;
+    const numericCost = Number(pass.cost);
+    if (Number.isFinite(numericCost) && numericCost > 0) {
+      return numericCost;
+    }
+    return calculateSeasonPassCost({
+      passType: pass.passType || 'monthly',
+      class: pass.class || 'third',
+      fromStation: pass.fromStation || '',
+      toStation: pass.toStation || ''
+    });
+  }, []);
+
   // --- Reset form
   const resetForm = () => {
     setPassForm({
@@ -657,8 +671,10 @@ export default function SeasonPassManagement() {
           
           {!loadingPasses && myPasses.length > 0 && (
             <Grid container spacing={3}>
-              {myPasses.map((pass) => (
-                <Grid item xs={12} md={6} key={pass.id}>
+              {myPasses.map((pass) => {
+                const displayCost = resolvePassCost(pass);
+                return (
+                  <Grid item xs={12} md={6} key={pass.id}>
                   <Card sx={{ position: 'relative', overflow: 'visible' }}>
                     <CardContent>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -711,7 +727,7 @@ export default function SeasonPassManagement() {
                             Cost
                           </Typography>
                           <Typography variant="body1">
-                            {pass.cost != null ? formatCurrencyLKR(pass.cost) : 'N/A'}
+                            {displayCost ? formatCurrencyLKR(displayCost) : 'N/A'}
                           </Typography>
                         </Grid>
                       </Grid>
@@ -732,8 +748,9 @@ export default function SeasonPassManagement() {
                       )}
                     </CardActions>
                   </Card>
-                </Grid>
-              ))}
+                  </Grid>
+                );
+              })}
             </Grid>
           )}
           
